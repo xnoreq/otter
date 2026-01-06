@@ -27,6 +27,7 @@ func getProducts() map[string]product.Product[uint64, uint64] {
 		&product.S3FIFO[uint64, uint64]{},
 		&product.LRU[uint64, uint64]{},
 		&product.ARC[uint64, uint64]{},
+		&policy.Optimal[uint64, uint64]{},
 	}
 
 	policiesSet := make(map[string]product.Product[uint64, uint64], len(policies))
@@ -60,7 +61,12 @@ func (s Simulator) Simulate() error {
 				return fmt.Errorf("not valid cache name: %s", c)
 			}
 
-			po := policy.NewPolicy(pr)
+			var po policyContract
+			if pp, ok := pr.(policyContract); ok {
+				po = pp
+			} else {
+				po = policy.NewPolicy(pr)
+			}
 			policies = append(policies, po)
 		}
 		if i == 0 {
